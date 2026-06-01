@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <bool.h>
+#include <stdbool.h>
 
 void PrintGreeting(void);    
 void GenerateBoard(void);
@@ -18,7 +18,7 @@ void PlaceBishops(char whiteBoard[8][8], char blackBoard[8][8], int extraBishops
 void PlaceKnights(char whiteBoard[8][8], char blackBoard[8][8], int extraKnights);
 void PlaceQueens(char whiteBoard[8][8], char blackBoard[8][8], int extraQueens);
 void PlaceKing(char whiteBoard[8][8], char blackBoard[8][8]);
-void Check(char whiteBoard[8][8], char blackBoard[8][8], int posX, int posY);
+bool Check(char whiteBoard[8][8], char blackBoard[8][8], int posX, int posY);
 #pragma endregion
 
 // Main and Ultilities
@@ -106,24 +106,36 @@ void GenerateBoard(void)
     */
     
     // Place Pawns (8 ct, not on first or final row)
+    puts("Adding pawns...");
     PlacePawns(whiteBoard, blackBoard, bonusIterations);
+    puts("Done.");
 
     // Note: Bonus iterations are in order as listed here
 
     // Place Rooks (2 ct, place anywhere)
+    puts("Adding rooks...");
     PlaceRooks(whiteBoard, blackBoard, bonusIterations[0]);
+    puts("Done.");
 
     // Place Bishops (2ct: one on Dark Square, one on Light square)
+    puts("Adding bishops...");
     PlaceBishops(whiteBoard, blackBoard, bonusIterations[1]);
+    puts("Done.");
 
     // Place Knights (2 ct, place anywhere)
-    PlaceKnight(whiteBoard, blackBoard, bonusIterations[2]);
+    puts("Adding knights...");
+    PlaceKnights(whiteBoard, blackBoard, bonusIterations[2]);
+    puts("Done.");
 
     // Place Queens (1 ct, anywhere)
+    puts("Adding queens...");
     PlaceQueens(whiteBoard, blackBoard, bonusIterations[3]);
+    puts("Done.");
 
     // Place Kings (1 ct, re-run if check)
-    PlaceKing()
+    puts("Adding kings...");
+    PlaceKing(whiteBoard, blackBoard);
+    puts("Board generation complete, printing board:");
 
     PrintBoard(whiteBoard, blackBoard);
     
@@ -148,8 +160,7 @@ bool SpaceEmpty(char whiteBoard[8][8], char blackBoard[8][8])
 }
 #pragma endregion
 
-
-
+// Graphical Output and Piece Placement
 #pragma region
 void PrintBoard(char whiteBoard[8][8], char blackBoard[8][8])
 {
@@ -174,7 +185,7 @@ void PrintBoard(char whiteBoard[8][8], char blackBoard[8][8])
 
             else if(whiteBoard[i][j] == '.' && blackBoard[i][j] != '.')
             {
-                printf("%c ", ToLowerCase(blackBoard[i][j]));
+                printf("%c ", blackBoard[i][j]);
             }
 
             else if(whiteBoard[i][j] != '.' && blackBoard[i][j] == '.')
@@ -240,7 +251,7 @@ void PlacePawns(char whiteBoard[8][8], char blackBoard[8][8], int bonusIteration
             rng = rand() % 6 + 1;
             
             // Checks if that space is available
-            if(whiteBoard[rng][i] != '.' && blackBoard[7-rng][7-i] != '.')
+            if(whiteBoard[rng][i] != '.' && blackBoard[rng][i] != '.')
             {
                 i--;
 
@@ -250,7 +261,7 @@ void PlacePawns(char whiteBoard[8][8], char blackBoard[8][8], int bonusIteration
             }    
             
             whiteBoard[rng][i] = 'P';
-            blackBoard[7 - rng][7 - i] = 'P';
+            blackBoard[7 - rng][7 - i] = 'p';
         }
 
     }
@@ -273,7 +284,7 @@ void PlaceRooks(char whiteBoard[8][8], char blackBoard[8][8], int extraRooks)
         int rng2 = rand() % 8;
 
         // If the space is occupied, re-roll position
-        if(whiteBoard[rng1][rng2] != '.' || blackBoard[7 - rng1][7 - rng2] != '.')
+        if(whiteBoard[rng1][rng2] != '.' || blackBoard[rng1][rng2] != '.')
         {
             i--;
             continue;
@@ -283,7 +294,7 @@ void PlaceRooks(char whiteBoard[8][8], char blackBoard[8][8], int extraRooks)
         else
         {
             whiteBoard[rng1][rng2] = 'R';
-            blackBoard[7 - rng1][7 - rng2] = 'R';
+            blackBoard[7 - rng1][7 - rng2] = 'r';
         }
     }
 }
@@ -325,7 +336,7 @@ void PlaceBishops(char whiteBoard[8][8], char blackBoard[8][8], int extraBishops
         }
 
         // If the space is occupied, re-roll position
-        if(whiteBoard[rng1][rng2] != '.' || blackBoard[7 - rng1][7 - rng2] != '.')
+        if(whiteBoard[rng1][rng2] != '.' || blackBoard[rng1][rng2] != '.')
         {
             i--;
             continue;
@@ -335,7 +346,7 @@ void PlaceBishops(char whiteBoard[8][8], char blackBoard[8][8], int extraBishops
         else
         {
             whiteBoard[rng1][rng2] = 'B';
-            blackBoard[7 - rng1][7 - rng2] = 'B';
+            blackBoard[7 - rng1][7 - rng2] = 'b';
         }
     }
 }
@@ -355,7 +366,7 @@ void PlaceKnights(char whiteBoard[8][8], char blackBoard[8][8], int extraKnights
         int rng2 = rand() % 8;
 
         // If the space is occupied, re-roll position
-        if(whiteBoard[rng1][rng2] != '.' || blackBoard[7 - rng1][7 - rng2] != '.')
+        if(whiteBoard[rng1][rng2] != '.' || blackBoard[rng1][rng2] != '.')
         {
             i--;
             continue;
@@ -364,8 +375,8 @@ void PlaceKnights(char whiteBoard[8][8], char blackBoard[8][8], int extraKnights
         // If space is not occupied, then place the queen there
         else
         {
-            whiteBoard[rng1][rng2] = 'K';
-            blackBoard[7 - rng1][7 - rng2] = 'K';
+            whiteBoard[rng1][rng2] = 'N';
+            blackBoard[7 - rng1][7 - rng2] = 'n';
         }
     }
 }
@@ -378,7 +389,7 @@ void PlaceQueens(char whiteBoard[8][8], char blackBoard[8][8], int extraQueens)
         int rng2 = rand() % 8;
 
         // If the space is occupied, re-roll position
-        if(whiteBoard[rng1][rng2] != '.' || blackBoard[7 - rng1][7 - rng2] != '.')
+        if(whiteBoard[rng1][rng2] != '.' || blackBoard[rng1][rng2] != '.')
         {
             i--;
             continue;
@@ -388,19 +399,21 @@ void PlaceQueens(char whiteBoard[8][8], char blackBoard[8][8], int extraQueens)
         else
         {
             whiteBoard[rng1][rng2] = 'Q';
-            blackBoard[7 - rng1][7 - rng2] = 'Q';
+            blackBoard[7 - rng1][7 - rng2] = 'q';
         }
     }
 }
 
 void PlaceKing(char whiteBoard[8][8], char blackBoard[8][8])
 {
-    int rng1 = rand() % 10;
-    int rng2 = rand() % 10;
+    
 
     for(int i = 0; i < 1; i++)
     {
-        if(whiteBoard[rng1][rng2] != '.' || blackBoard[7 - rng1][7 - rng2] != '.' || Check(whiteBoard, blackBoard, rng1, rng2))
+        int rng1 = rand() % 10;
+        int rng2 = rand() % 10;
+
+        if(whiteBoard[rng1][rng2] != '.' || blackBoard[rng1][rng2] != '.' || Check(whiteBoard, blackBoard, rng1, rng2))
         {
             i--;
             continue;
@@ -408,23 +421,256 @@ void PlaceKing(char whiteBoard[8][8], char blackBoard[8][8])
         else
         {
             whiteBoard[rng1][rng2] = 'K';
-            blackBoard[7 - rng1][7 - rng2] = 'K';
+            blackBoard[7 - rng1][7 - rng2] = 'k';
             break;
         }
 
     }
 }
 
-int Check(char whiteBoard[8][8], char blackBoard[8][8], int posX, int posY)
+bool Check(char whiteBoard[8][8], char blackBoard[8][8], int posX, int posY)
 {
-    // return 0 = false
-    // return 1 = true
+    // return 0 = false;    king is not in check
+    // return 1 = true;     king is in check
 
+    // First, look through the board...
     for(int i = 0; i < 8; i++)
     {
         for(int j = 0; j < 8; j++)
         {
-            
+            // ...to find the king
+            if(whiteBoard[i][j] == 'K')
+            {
+                // Then, perform checks on the king to see if the king is in check or checkmate
+                
+                
+                // Check if attacked by a Rook (or Queen)
+                int n = i + 1, m = j;
+                puts("Checking for check by rooks...");
+
+                for(n; n < 8; n++)
+                {
+                    if(blackBoard[n][m] == '.')
+                        continue;
+
+                    else if(blackBoard[n][m] == 'r' || blackBoard[n][m] == 'q')
+                        return 1;
+
+                    else if(whiteBoard[n][m] != '.')
+                        break;
+                    
+                    else
+                        break;
+
+                }
+
+                n = i - 1, m = j;
+                for(n; n >= 0; n--)
+                {
+                    if(blackBoard[n][m] == '.')
+                        continue;
+
+                    else if(blackBoard[n][m] == 'r' || blackBoard[n][m] == 'q')
+                        return 1;
+
+                    else if(whiteBoard[n][m] != '.')
+                        break;
+
+                    else 
+                        break;
+                }
+
+                n = i, m = j + 1;
+                for(m ; m < 8; m++)
+                {
+                    if(whiteBoard[n][m] == '.')
+                        continue;
+
+                    else if(blackBoard[n][m] == 'r' || blackBoard[n][m] == 'q')
+                        return 1;
+
+                    else if(whiteBoard[n][m] != '.')
+                        break;
+
+                    else
+                        break;
+                }
+
+                n = i, m = j - 1;
+                for(m; m >= 0; m--)
+                {
+                    if(whiteBoard[n][m] == '.')
+                        continue;
+
+                    else if(blackBoard[n][m] == 'r' || blackBoard[n][m] == 'q')
+                        return 1;
+                    
+                    else if(whiteBoard[n][m] != '.')
+                        break;
+
+                    else
+                        break;
+                }
+                puts("Done.");
+                
+                // Check if attacked by a Bishop (or Queen)
+                n = i, m = j;
+                puts("Checking for checks by bishops.");
+
+                while(n < 8 && m < 8)
+                {
+                    if(blackBoard[++n][++m] == '.')
+                        continue;
+                    
+                    else if(blackBoard[n][m] == 'b' || blackBoard[n][m] == 'q')
+                        return 1;
+                    
+                    else if(whiteBoard[n][m] != '.')
+                        break;
+
+                    else
+                        break;
+
+                }
+
+                n = i, m = j;
+                while(n >= 0 && m < 8)
+                {
+                    if(blackBoard[--n][++m] == '.')
+                        continue;
+
+                    else if(blackBoard[n][m] == 'b' || blackBoard[n][m] == 'q')
+                        return 1;
+
+                    else if(whiteBoard[n][m] != '.')
+                        break;
+                    
+                    else
+                        break;
+                }
+
+                n = i, m = j;
+                while(n < 8 || m >= 0)
+                {
+                    if(blackBoard[++n][--m] == '.')
+                        continue;
+                    
+                    else if(blackBoard[n][m] == 'b' || blackBoard[n][m] == 'q')
+                        return 1;
+                    
+                    else if(whiteBoard[n][m] != '.')
+                        break;
+                    
+                    else    
+                        break;
+                }
+
+                n = i, m = j;
+                while(n >= 0 || m >= 0)
+                {
+                    if(blackBoard[--n][--m] == '.')
+                        continue;
+                    
+                    else if(blackBoard[n][m] == 'b' || blackBoard[n][m] == 'q')
+                        return 1;
+                    
+                    else if(whiteBoard[n][m] != '.')
+                        break;
+                    
+                    else    
+                        break;
+                }
+                puts("Done.");
+                
+                // Check if attacked by a Knight
+                n = i, m = j;
+                puts("Checking for checks by knights...");
+                if(n + 2 < 8)
+                {
+                    if(m + 1 < 8)
+                    {
+                        if(blackBoard[n + 2][m + 1] == 'n')
+                            return 1;
+                    }
+                    
+                    if(m - 1 >= 0)
+                    {
+                        if(blackBoard[n + 2][m - 1] == 'n')
+                            return 1;
+                    }
+                    
+                }
+
+                if(n - 2 >= 0)
+                {
+                    if(m + 1 < 9)
+                    {
+                        if(blackBoard[n - 2][m + 1] == 'n')
+                            return 1;
+                    }
+                    if(m - 1 >= 0)
+                    {
+                        if(blackBoard[n - 2][m - 1] == 'n')
+                            return 1;
+                    }
+                }
+                
+                if(n + 1 < 8)
+                {
+                    if(m + 2 < 8)
+                    {
+                        if(blackBoard[n + 1][m + 2] == 'n')
+                            return 1;
+                    }
+
+                    if(m - 2 >= 0)
+                    {
+                        if(blackBoard[n + 1][m - 2] == 'n')
+                            return 1;
+                    }
+                }
+
+                if(n - 1 >= 0)
+                {
+                    if(m + 2 < 8)
+                    {
+                        if(blackBoard[n - 1][m + 2] == 'n')
+                            return 1;
+                    }
+
+                    if(m - 2 >= 0)
+                    {
+                        if(blackBoard[n - 1][m - 2] == 'n')
+                            return 1;
+                    }
+                }
+                puts("Done.");
+
+                // Check if attacked by a Pawn (or King)
+                puts("Checking for checks by pawns or kings...");
+                n = i, m = j;
+                for(int a = -1; a <= 1; a++)
+                {
+                    for(int b = -1; b <= 1; b++)
+                    {
+                        if(a == 0 && b == 0)
+                            continue;
+                        
+                        if(a = -1 || b != 0)
+                        {
+                            if(blackBoard[n + a][m + b] == 'p')
+                                return 1;
+                        }
+
+                        if(blackBoard[n + a][m + b] == 'k')
+                            return 1;
+                    }
+                }
+                puts("Done.");
+                puts("No checks found!");
+                // If all checks fail, return false
+                return 0;
+            }
         }
     }
     
