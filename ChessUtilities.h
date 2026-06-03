@@ -4,7 +4,7 @@
 #include <stdbool.h>
 
 // Board Assessment
-char* GetChessCharacter(char code[3]);
+char* ChessPiece(char code[3]);
 bool IsOnBoard(int input);
 bool SpaceOccupied(char* boardSpace);
 bool Check(char* board[8][8], int posX, int posY, bool debug);
@@ -19,6 +19,6 @@ void PlaceKing(char* board[8][8], bool debug);
 
 // Text Output
 void CheckMessage(char* checkingPiece, int posX, int posY, int kingX, int kingY);
-void PlacementMessage(char* placedPiece, int posX, int posY);
+void PlacementMessage(char* placedPiece1, char* placedPiece2, int posX, int posY);
 
 #endif
