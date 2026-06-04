@@ -499,7 +499,7 @@ bool Check(char* board[8][8], int posX, int posY, bool debug)
 // Piece Placement
 #pragma region
 
-void PlacePawns(char* board[8][8], int bonusIterations[4], bool debug)
+void PlacePawns(char* board[8][8], int bonusIterations[4], char* captured[16], bool debug)
 {
     // Iterates 8 times, one for each possible pawn
     for(int i = 0; i < 8; i++)
@@ -557,7 +557,7 @@ void PlacePawns(char* board[8][8], int bonusIterations[4], bool debug)
         else
         {
             // Selects a spot on the column
-            rng = rand() % 6 + 1;
+            rng = rand() % 3 + 1;
             
             // Checks if that space is available
             if(SpaceOccupied(board[rng][i]) || SpaceOccupied(board[7 - rng][7 - i]))
@@ -579,8 +579,10 @@ void PlacePawns(char* board[8][8], int bonusIterations[4], bool debug)
     }
 }
 
-void PlaceRooks(char* board[8][8], int extraRooks, bool debug)
+void PlaceRooks(char* board[8][8], int extraRooks, char* captured[16], bool debug)
 {
+    printf("\tTotal %s : 2 + %d = %d\n", ChessPiece("WR"), extraRooks, 2 + extraRooks);
+    
     for(int i = 0; i < 2 + extraRooks; i ++)
     {
         int coin = rand() % 10;
@@ -617,8 +619,10 @@ void PlaceRooks(char* board[8][8], int extraRooks, bool debug)
     }
 }
 
-void PlaceBishops(char* board[8][8], int extraBishops, bool debug)
+void PlaceBishops(char* board[8][8], int extraBishops, char* captured[16], bool debug)
 {
+    printf("\tTotal %s : 2 + %d = %d\n", ChessPiece("WB"), extraBishops, 2 + extraBishops);
+    
     for(int i = 0; i < 2 + extraBishops; i ++)
     {
         int coin = rand() % 10;
@@ -678,7 +682,7 @@ void PlaceBishops(char* board[8][8], int extraBishops, bool debug)
     }
 }
 
-void PlaceKnights(char* board[8][8], int extraKnights, bool debug)
+void PlaceKnights(char* board[8][8], int extraKnights, char* captured[16], bool debug)
 {
     for(int i = 0; i < 2 + extraKnights; i ++)
     {
@@ -714,7 +718,7 @@ void PlaceKnights(char* board[8][8], int extraKnights, bool debug)
     }
 }
 
-void PlaceQueens(char* board[8][8], int extraQueens, bool debug)
+void PlaceQueens(char* board[8][8], int extraQueens, char* captured[16], bool debug)
 {
     for(int i = 0; i < 1 + extraQueens; i ++)
     {
@@ -790,6 +794,45 @@ void CheckMessage(char* checkingPiece, int checkX, int checkY, int kingX, int ki
 void PlacementMessage(char* placedPiece1, char* placedPiece2, int posX, int posY)
 {
     printf("\t( %s , %s ) => ( %d%c , %d%c )\n", placedPiece1, placedPiece2, 7 - posX + 1, (char)(posY + 65), 7 - (7 - posX) + 1, (char)(7 - posY + 65));
+}
+
+char* SwapPiece(char* chessPiece)
+{
+    // Pawns
+    if(!strcmp(chessPiece, ChessPiece("BP")))
+        return ChessPiece("WP");
+    else if(!strcmp(chessPiece, ChessPiece("WP")))
+        return ChessPiece("BP");
+    
+    // Rooks
+    else if(!strcmp(chessPiece, ChessPiece("BR")))
+        return ChessPiece("WR");
+    else if(!strcmp(chessPiece, ChessPiece("WR")))
+        return ChessPiece("BR");
+    
+    // Knights
+    else if(!strcmp(chessPiece, ChessPiece("WN")))
+        return ChessPiece("BN");
+    else if(!strcmp(chessPiece, ChessPiece("BN")))
+        return ChessPiece("WN");
+    
+    // Bishops
+    else if(!strcmp(chessPiece, ChessPiece("WB")))
+        return ChessPiece("BB");
+    else if(!strcmp(chessPiece, ChessPiece("BB")))
+        return ChessPiece("WB");
+
+    // Queens
+    else if(!strcmp(chessPiece, ChessPiece("WQ")))
+        return ChessPiece("BQ");
+    else if(!strcmp(chessPiece, ChessPiece("BQ")))
+        return ChessPiece("WQ");
+
+    // Kings
+    else if(!strcmp(chessPiece, ChessPiece("WK")))
+        return ChessPiece("BK");
+    else if(!strcmp(chessPiece, ChessPiece("BK")))
+        return ChessPiece("WK");
 }
 
 #pragma endregion
