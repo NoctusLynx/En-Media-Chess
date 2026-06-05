@@ -494,6 +494,22 @@ bool Check(char* board[8][8], int posX, int posY, bool debug)
     return false;
 }
 
+void AddToCaptured(char* chessPiece, char* captured[16])
+{
+    for(int i = 0; i < 16; i++)
+    {
+        if(!strcmp("", captured[i]))
+        {
+            captured[i] = chessPiece;
+            break;
+        }
+        else
+        {
+            continue;
+        }
+    }
+}
+
 #pragma endregion
 
 // Piece Placement
@@ -552,6 +568,7 @@ void PlacePawns(char* board[8][8], int bonusIterations[4], char* captured[16], b
         else if(rng < 3)
         {
             debug ? printf("\t( %s , %s ) => ( X  , X  )\n", ChessPiece("BP"), ChessPiece("WP"))  : (void)0;
+            AddToCaptured(ChessPiece("WP"), captured);
             continue;
         }
         else
@@ -581,7 +598,7 @@ void PlacePawns(char* board[8][8], int bonusIterations[4], char* captured[16], b
 
 void PlaceRooks(char* board[8][8], int extraRooks, char* captured[16], bool debug)
 {
-    printf("\tTotal %s : 2 + %d = %d\n", ChessPiece("WR"), extraRooks, 2 + extraRooks);
+    debug ? printf("\tTotal %s : 2 + %d = %d\n", ChessPiece("WR"), extraRooks, 2 + extraRooks) : (void)0;
     
     for(int i = 0; i < 2 + extraRooks; i ++)
     {
@@ -591,6 +608,7 @@ void PlaceRooks(char* board[8][8], int extraRooks, char* captured[16], bool debu
         if(coin < 1)
         {
             debug ? printf("\t( %s , %s ) => ( X  , X  )\n", ChessPiece("BR"), ChessPiece("WR")) : (void)0;
+            AddToCaptured(ChessPiece("WR"), captured);
             continue;
         }
             
@@ -621,7 +639,7 @@ void PlaceRooks(char* board[8][8], int extraRooks, char* captured[16], bool debu
 
 void PlaceBishops(char* board[8][8], int extraBishops, char* captured[16], bool debug)
 {
-    printf("\tTotal %s : 2 + %d = %d\n", ChessPiece("WB"), extraBishops, 2 + extraBishops);
+    debug ? printf("\tTotal %s : 2 + %d = %d\n", ChessPiece("WB"), extraBishops, 2 + extraBishops) : (void)0;
     
     for(int i = 0; i < 2 + extraBishops; i ++)
     {
@@ -631,6 +649,7 @@ void PlaceBishops(char* board[8][8], int extraBishops, char* captured[16], bool 
         if(coin < 1)
         {
             debug ? printf("\t( %s , %s ) => ( X  , X  )\n", ChessPiece("BB"), ChessPiece("WB")) : (void)0;
+            AddToCaptured(ChessPiece("WB"), captured);
             continue;
         }
             
@@ -684,12 +703,16 @@ void PlaceBishops(char* board[8][8], int extraBishops, char* captured[16], bool 
 
 void PlaceKnights(char* board[8][8], int extraKnights, char* captured[16], bool debug)
 {
+    debug ? printf("\tTotal %s: 2 + %d = %d\n", ChessPiece("WN"), extraKnights, 2 + extraKnights) : (void)0;
+    
     for(int i = 0; i < 2 + extraKnights; i ++)
     {
         int coin = rand() % 10;
         
         if(coin < 1)
         {
+            debug ? printf("\t( %s , %s ) => ( X  , X  )\n", ChessPiece("BN"), ChessPiece("WN")) : (void)0;
+            AddToCaptured(ChessPiece("WN"), captured);
             continue;
         }
 
@@ -699,7 +722,6 @@ void PlaceKnights(char* board[8][8], int extraKnights, char* captured[16], bool 
         // If the space is occupied, re-roll position
         if(SpaceOccupied(board[rng1][rng2]) || SpaceOccupied(board[7 - rng1][ 7- rng2]))
         {
-            debug ? printf("\t( %s , %s ) => ( X  , X  )\n", ChessPiece("BN"), ChessPiece("WN")) : (void)0;
             i--;
             continue;
         }
@@ -720,15 +742,24 @@ void PlaceKnights(char* board[8][8], int extraKnights, char* captured[16], bool 
 
 void PlaceQueens(char* board[8][8], int extraQueens, char* captured[16], bool debug)
 {
+    debug ? printf("\tTotal %s: 2 + %d = %d\n", ChessPiece("WQ"), extraQueens, 2 + extraQueens) : (void)0;
+
     for(int i = 0; i < 1 + extraQueens; i ++)
     {
         int rng1 = rand() % 8;
         int rng2 = rand() % 8;
 
+        int coin = rand() % 10;
+
+        if(coin < 1)
+        {
+            debug ? printf("\t( %s ,  %s ) => ( X  , X  )\n", ChessPiece("BQ"), ChessPiece("WQ")) : (void)0;
+            AddToCaptured(ChessPiece("WQ"), captured);
+        }
+
         // If the space is occupied, re-roll position
         if(SpaceOccupied(board[rng1][rng2]) || SpaceOccupied(board[7 - rng1][7 - rng2]))
         {
-            debug ? printf("\t( %s ,  %s ) => ( X  , X  )\n", ChessPiece("BQ"), ChessPiece("WQ")) : (void)0;
             i--;
             continue;
         }
@@ -779,6 +810,126 @@ void PlaceKing(char* board[8][8], bool debug)
         }
 
     }
+}
+
+void ShiftPawns(char* board[8][8], char* captured[16], bool debug)
+{
+    // Count the number of captured pieces
+    int numCaptured = 0;
+    for(int i = 0; i < 16; i++)
+    {
+        if(!strcmp(captured[i], ""))
+            break;
+
+        else
+            numCaptured++;
+    }
+
+    // If no pieces were captured, dorce quit the function
+    if(numCaptured <= 0)
+        return;
+
+    debug ? printf("\tNumber of captured pieces: %d\n", numCaptured) : (void)0;
+
+    int threshold = 5;
+
+    // Parse the board for pawns
+    for(int i = 0; i < 8; i++)
+    {
+        for(int j = 0; j < 8; j++)
+        {
+            // Fires if a pawn is found
+            if(!strcmp(board[i][j], ChessPiece("WP")) || !strcmp(board[i][j], ChessPiece("BP")))
+            {
+                
+                // Select a horizontal direction at random
+                int horizontal = 2 * (rand() % 2) - 1;
+                
+                // Select a vertical direction based on the type of the found pawn
+                int vertical = !strcmp(board[i][j], ChessPiece("WP")) ? -1 : 1;
+
+                // Check that the new locations are within the bounds of the board
+                if(!IsOnBoard(i + vertical) || !IsOnBoard(j + horizontal) || !IsOnBoard(7 - i - vertical) || !IsOnBoard(7 - j - horizontal))
+                {   
+                    // If it isn't, flip the direction of the horizontal change, and try again
+                    horizontal *= -1;
+                    
+                    // If it's still off the board
+                    if(!IsOnBoard(j + horizontal) || !IsOnBoard(7 - j - horizontal))
+                    {
+                        // Skip it
+                        continue;
+                    }
+                }
+
+                // Check if space or its complement is available
+                if(!SpaceOccupied(board[i + vertical][j + horizontal]) || !SpaceOccupied(board[7 - i - vertical][7 - j - horizontal]))
+                {
+                    
+                    if(( rand() % 10 ) < threshold)
+                    {
+                        
+                        debug ? 
+                            printf("\t( %s  , %s  ) => ( %d%c, %d%c ) => ( %d%c, %d%c)\n", 
+                            board[i][j], board[7 - i][7 - j], 
+                            7 - i + 1, (char)(j + 65), i + 1, (char)(7 - j + 65), 
+                            7 - i + 1 - vertical, (char)(j + horizontal + 65), i + 1 + vertical, (char)(7 - j - horizontal + 65)) :
+                            (void)0;
+                        
+                        // Resets the threshold amount
+                        threshold = 5;
+
+                        // Add pawns to new locations
+                        board[i + vertical][j + horizontal] = !strcmp(board[i][j], ChessPiece("WS")) ? ChessPiece("WS") : ChessPiece("BP");
+                        board[7 - i - vertical][7 - j - horizontal] = !strcmp(board[7 - i][7 - j], ChessPiece("WP")) ? ChessPiece("WP") : ChessPiece("BP");
+    
+                        // Remove pawns from current locations (replace with appropriate colored tile)
+                        // Light = sum of coordinates is even;  (i + j) % 2 = 0 = false
+                        // Dark = sum of coordinates is odd;    (i + j) % 2 = 1 = true
+                        board[i][j] = ((i + j) % 2) ? ChessPiece("BS") : ChessPiece("WS");
+                        board[7 - i][7 - j] = ((14 - i - j) % 2) ? ChessPiece("BS") : ChessPiece("WS");
+                    
+                    }
+                    else
+                    {
+                        debug ? printf("\tPawn shift skipped.\n") :  (void)0;
+                        threshold++;
+                    }
+                    
+                    // If the funtion has run out of iterations, force quit the function
+                    if(--numCaptured <= 0)
+                        return;
+                    else
+                        continue;
+                    
+                }
+                
+                else
+                {
+                    continue;
+                }
+                    
+                     
+
+            }
+            
+            // Skips if no pawn
+            else
+            {
+                continue;
+            }
+        }
+
+        // Loops back through the board until the function runs out of iterations
+        if(i == 7)
+        {
+            debug ? puts("\tFull board scan complete, but iterations remain- resetting loop...") : (void)0;
+            i = -1;
+        }    
+
+    }
+
+
 }
 
 #pragma endregion

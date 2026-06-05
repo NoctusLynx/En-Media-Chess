@@ -1,5 +1,6 @@
 // References
 #pragma region
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -14,7 +15,7 @@
 bool MainMenu(bool* debug);
 void PrintGreeting(void);    
 void GenerateBoard(bool debug);
-void PrintBoard(char* board[8][8]);
+void PrintBoard(char* board[8][8], char* captured[16]);
 void PrintLine(bool orientation);
 void InitializeBoard(char* board[8][8]);
 void InputErrorMessage(void);
@@ -23,6 +24,7 @@ void InputErrorMessage(void);
 
 // Main and Ultilities
 #pragma region
+
 int main(void)
 {
     bool debug = false;
@@ -58,7 +60,7 @@ bool MainMenu(bool* debug)
         GenerateBoard(*debug);
         
         // Exits the program via user input
-        case 3:
+        case 2:
         printf("Exiting...\n\n");
         return false;        
 
@@ -135,7 +137,7 @@ void GenerateBoard(bool debug)
     if(debug) 
     {
         puts("\tDone.\n");
-        PrintBoard(board);
+        PrintBoard(board, captured);
     }
     else
         printf(".");
@@ -148,7 +150,7 @@ void GenerateBoard(bool debug)
     if(debug) 
     {
         puts("\tDone.\n");
-        PrintBoard(board);
+        PrintBoard(board, captured);
     }
     else
         printf(".");
@@ -159,7 +161,7 @@ void GenerateBoard(bool debug)
     if(debug) 
     {
         puts("\tDone.\n");
-        PrintBoard(board);
+        PrintBoard(board, captured);
     }
     else
         printf(".");
@@ -170,7 +172,7 @@ void GenerateBoard(bool debug)
     if(debug)
     {
         puts("\tDone.\n");
-        PrintBoard(board);
+        PrintBoard(board, captured);
     }
     else
         printf(".");
@@ -181,17 +183,29 @@ void GenerateBoard(bool debug)
     if(debug) 
     {
         puts("\tDone.\n");
-        PrintBoard(board);
+        PrintBoard(board, captured);
     }
     else
         printf(".");
 
+    debug ? puts("Shifting Pawns...") : (void)0;
+    ShiftPawns(board, captured, debug);
+    if(debug)
+    {
+        puts("\tDone.\n");
+        PrintBoard(board, captured);
+    }
+    else
+        printf(".");
+    
     // Place Kings (1 ct, re-run if check)
     debug ? puts("Generating Kings:\n") : (void)0;
     PlaceKing(board, debug);
-    debug ? puts("\nBoard generation complete, printing board:\n") : puts("\nDone.\n");
+    debug ? puts("\tDone.\n") : (void)0;
 
-    PrintBoard(board);
+    debug ? puts("Board generation complete, printing board:\n") : puts("\nDone.\n");
+
+    PrintBoard(board, captured);
 }
 
 void InitializeBoard(char* board[8][8])
@@ -215,7 +229,7 @@ void InitializeBoard(char* board[8][8])
     }
 }
 
-void PrintBoard(char* board[8][8])
+void PrintBoard(char* board[8][8], char* captured[16])
 {
     puts("    A B C D E F G H");
     
@@ -238,6 +252,26 @@ void PrintBoard(char* board[8][8])
     PrintLine(false);
 
     printf("\n");
+
+    printf("White Captured: ");
+    for(int i = 0; i < 16; i++)
+    {
+        if(!strcmp("", captured[i]))
+            break;
+
+        printf("%s ", SwapPiece(captured[i]));
+    }
+    printf("\n");
+
+    printf("Black Captured: ");
+    for(int i = 0; i < 16; i++)
+    {
+        if(!strcmp("", captured[i]))
+            break;
+        
+        printf("%s ", captured[i]);
+    }
+    printf("\n\n");
 }
 
 void InputErrorMessage(void)

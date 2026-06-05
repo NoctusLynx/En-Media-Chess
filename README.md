@@ -18,6 +18,12 @@ Currently, this version of chess is not currently playable.
     I do have plans of making this variation playable, but those plans haven't been realized yet.
     Until then, you will need a separate chess board or simulator to play this variant.
 
+Run the "EnMediaChess.out" file in a Bash terminal.
+    You may use the following command to do so:
+        clear && ./EnMediaChess.out
+    Alternatively, if you make changes to the code, run this command instead:
+        clear && gcc EnMediaChess.c ChessUtilities.c -o EnMediaChess.out && ./EnMediaChess.out
+
 ♟♜♞♝♛♚ - Procedural Generation - ♔♕♗♘♖♙
 
 When you select to generate a board, a board-state will be procedurally generated.
@@ -84,10 +90,16 @@ Black  ♟     ♜      ♞       ♝       ♛      ♚
 ♟♜♞♝♛♚ - Changelog - ♔♕♗♘♖♙
 
 Known Issues:
-    Create a list of pieces that have bee captured before the game began. 
-    Shift pawns left or right once if there was a capture, per capture. 
+    
 
-V1.2: 
+V1.12:
+    Added a list of captured pieces to make it more clear what pieces are missing and why.
+    Added the ablity for pawns to shift based on how many pieces pre-captured, suggesting they were the capturing piece.
+
+    Fixed a bug with debug messages not printing when Knights were pre-captured.
+    Fixed a bug with debug messages not printing when Queens were pre-captured.
+
+V1.11: 
     Added rules to the "README.md" file.
     Added a changelog to the "README.md" file.
     Added white and black squares to represent empty light and dark squares on a chess board.

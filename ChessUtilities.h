@@ -17,6 +17,7 @@ void PlaceBishops(char* board[8][8], int extraBishops, char* captured[16], bool 
 void PlaceKnights(char* board[8][8], int extraKnights, char* captured[16], bool debug);
 void PlaceQueens(char* board[8][8], int extraQueens, char* captured[16], bool debug);
 void PlaceKing(char* board[8][8], bool debug);
+void ShiftPawns(char* board[8][8], char* captured[16], bool debug);
 
 // Text Output
 void CheckMessage(char* checkingPiece, int posX, int posY, int kingX, int kingY);
