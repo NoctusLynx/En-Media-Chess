@@ -85,7 +85,7 @@ char* ChessPiece(char code[3])
 
 bool IsOnBoard(int input)
 {
-    if(input <= 7 && input >= 0)
+    if((0 <= input) && (input <= 7))
         return true;
     
     else
@@ -146,7 +146,7 @@ bool Check(char* board[8][8], int posX, int posY, bool debug)
     
         }
     
-        n = posX - 1, m = posY;
+        n = posX, m = posY;
         while(IsOnBoard(--n) && IsOnBoard(m))
         {
             if(!SpaceOccupied(board[n][m]))
@@ -173,7 +173,7 @@ bool Check(char* board[8][8], int posX, int posY, bool debug)
                 break;
         }
     
-        n = posX, m = posY + 1;
+        n = posX, m = posY;
         while(IsOnBoard(n) && IsOnBoard(++m))
         {
             if(!SpaceOccupied(board[n][m]))
@@ -200,7 +200,7 @@ bool Check(char* board[8][8], int posX, int posY, bool debug)
                 break;
         }
     
-        n = posX, m = posY - 1;
+        n = posX, m = posY;
         while(IsOnBoard(n) && IsOnBoard(--m))
         {
             if(!SpaceOccupied(board[n][m]))
@@ -515,7 +515,7 @@ void AddToCaptured(char* chessPiece, char* captured[16])
 // Piece Placement
 #pragma region
 
-void PlacePawns(char* board[8][8], int bonusIterations[4], char* captured[16], bool debug)
+void PlacePawns(char* board[8][8], int bonusIterations[4], char* captured[16], int pawnCodes[8], bool debug)
 {
     // Iterates 8 times, one for each possible pawn
     for(int i = 0; i < 8; i++)
@@ -534,6 +534,7 @@ void PlacePawns(char* board[8][8], int bonusIterations[4], char* captured[16], b
                 // Rook
                 case 0:
 
+                pawnCodes[i] = -1;
                 bonusIterations[0]++;
                 debug ? printf("( %s  , %s  )\n", ChessPiece("BR"), ChessPiece("WR")) : (void)0;
                 
@@ -542,6 +543,7 @@ void PlacePawns(char* board[8][8], int bonusIterations[4], char* captured[16], b
                 // Knight
                 case 1:
 
+                pawnCodes[i] = -2;
                 bonusIterations[1]++;
                 debug ? printf("( %s  , %s  )\n", ChessPiece("BN"), ChessPiece("WN")) : (void)0;
                 
@@ -550,6 +552,7 @@ void PlacePawns(char* board[8][8], int bonusIterations[4], char* captured[16], b
                 // Bishop
                 case 2:
 
+                pawnCodes[i] = -3;
                 bonusIterations[2]++;
                 debug ? printf("( %s  , %s  )\n", ChessPiece("BB"), ChessPiece("WB")) : (void)0;
 
@@ -558,6 +561,7 @@ void PlacePawns(char* board[8][8], int bonusIterations[4], char* captured[16], b
                 // Queen
                 case 3:
                 
+                pawnCodes[i] = -4;
                 bonusIterations[3]++;
                 debug ? printf("( %s  , %s  )\n", ChessPiece("BQ"), ChessPiece("WQ")) : (void)0;
                 
@@ -568,6 +572,7 @@ void PlacePawns(char* board[8][8], int bonusIterations[4], char* captured[16], b
         else if(rng < 3)
         {
             debug ? printf("\t( %s , %s ) => ( X  , X  )\n", ChessPiece("BP"), ChessPiece("WP"))  : (void)0;
+            pawnCodes[i] = 0;
             AddToCaptured(ChessPiece("WP"), captured);
             continue;
         }
@@ -584,10 +589,7 @@ void PlacePawns(char* board[8][8], int bonusIterations[4], char* captured[16], b
                 continue;
             }    
             
-            if(debug) 
-            {
-                PlacementMessage(ChessPiece("BP"), ChessPiece("WP"), rng, i);
-            }
+            debug ? PlacementMessage(ChessPiece("BP"), rng, i) : (void)0;
 
             board[rng][i] = ChessPiece("BP");
             board[7 - rng][7 - i] = ChessPiece("WP");
@@ -626,10 +628,7 @@ void PlaceRooks(char* board[8][8], int extraRooks, char* captured[16], bool debu
         // If space is not occupied, then place the queen there
         else
         {
-            if(debug) 
-            {
-                PlacementMessage(ChessPiece("BR"), ChessPiece("WR"), rng1, rng2);
-            }
+            debug ? PlacementMessage(ChessPiece("BR"), rng1, rng2) : (void)0;
             
             board[rng1][rng2] = ChessPiece("BR");
             board[7 - rng1][7 - rng2] = ChessPiece("WR");
@@ -637,7 +636,7 @@ void PlaceRooks(char* board[8][8], int extraRooks, char* captured[16], bool debu
     }
 }
 
-void PlaceBishops(char* board[8][8], int extraBishops, char* captured[16], bool debug)
+void PlaceBishops(char* board[8][8], int extraBishops, char* captured[16], int pawnCodes[8], int bishopCodes[10], bool debug)
 {
     debug ? printf("\tTotal %s : 2 + %d = %d\n", ChessPiece("WB"), extraBishops, 2 + extraBishops) : (void)0;
     
@@ -649,6 +648,7 @@ void PlaceBishops(char* board[8][8], int extraBishops, char* captured[16], bool 
         if(coin < 1)
         {
             debug ? printf("\t( %s , %s ) => ( X  , X  )\n", ChessPiece("BB"), ChessPiece("WB")) : (void)0;
+            bishopCodes[i] = -1;
             AddToCaptured(ChessPiece("WB"), captured);
             continue;
         }
@@ -663,15 +663,47 @@ void PlaceBishops(char* board[8][8], int extraBishops, char* captured[16], bool 
         else if(i == 1)
             coin = 1;
 
+        // Check for the color of promoted pawns
+        else if(i > 1)
+        {
+            // Scans the pawn codes array
+            for(int i = 0; i < 8; i++)
+            {
+                // If it finds a promoted bishop
+                if(pawnCodes[i] == -3)
+                {
+                    coin = (i % 2 == 0) ? 0 : 1;
+
+                    if(debug)
+                    {
+                        printf("\tpawnCodes at i = %d results in ", i);
+    
+                        printf( coin ? "dark-square bishop\n" : "light-square bishop\n");
+                    }
+
+                    pawnCodes[i] = 0;
+                    break;
+                }
+
+            }
+        }
+
+        // Select location to spawn the bishop
         int rng1 = 2 * (rand() % 4);
         int rng2 = 2 * (rand() % 4);
 
-        // If coin is even, then both rng values are even; if coid is odd, both rng values are odd
+        // If coin is even, then both rng values are even; if coid is odd, only one of the rng values are odd
+        // Recall: coin = 0 => Light-Square Bishop; coin = 1 => Dark-Square Bishop
         if(coin == 1)
         {
+            bishopCodes[i] = 1;
             rng1++;
             if(rng1 >= 8)
                 rng1 = 0;
+        }
+        else
+        {
+            bishopCodes[i] = 0;
         }
 
         if(!IsOnBoard(!rng1) || ! IsOnBoard(rng2))
@@ -690,10 +722,7 @@ void PlaceBishops(char* board[8][8], int extraBishops, char* captured[16], bool 
         // If space is not occupied, then place the queen there
         else
         {
-            if(debug) 
-            {
-                PlacementMessage(ChessPiece("BB"), ChessPiece("WB"), rng1, rng2);
-            }
+            debug ? PlacementMessage(ChessPiece("BB"), rng1, rng2) : (void)0;
             
             board[rng1][rng2] = ChessPiece("BB");
             board[7 - rng1][7 - rng2] = ChessPiece("WB");
@@ -729,10 +758,7 @@ void PlaceKnights(char* board[8][8], int extraKnights, char* captured[16], bool 
         // If space is not occupied, then place the queen there
         else
         {
-            if(debug) 
-            {
-                PlacementMessage(ChessPiece("BN"), ChessPiece("WN"), rng1, rng2);
-            }
+            debug ? PlacementMessage(ChessPiece("BN"), rng1, rng2) : (void)0;
             
             board[rng1][rng2] = ChessPiece("BN");
             board[7 - rng1][7 - rng2] = ChessPiece("WN");
@@ -767,10 +793,7 @@ void PlaceQueens(char* board[8][8], int extraQueens, char* captured[16], bool de
         // If space is not occupied, then place the queen there
         else
         {
-            if(debug) 
-            {
-                PlacementMessage(ChessPiece("BQ"), ChessPiece("WQ"), rng1, rng2);
-            }
+            debug ? PlacementMessage(ChessPiece("BQ"), rng1, rng2) : (void)0;
             
             board[rng1][rng2] = ChessPiece("BQ");
             board[7 - rng1][7 - rng2] = ChessPiece("WQ");
@@ -803,7 +826,7 @@ void PlaceKing(char* board[8][8], bool debug)
         }
         else
         {
-            debug ? PlacementMessage(ChessPiece("BK"), ChessPiece("WK"), rng1, rng2) : (void)0;
+            debug ? PlacementMessage(ChessPiece("BK"), rng1, rng2) : (void)0;
             
             board[rng1][rng2] = ChessPiece("BK");
             board[7 - rng1][7 - rng2] = ChessPiece("WK");
@@ -812,20 +835,51 @@ void PlaceKing(char* board[8][8], bool debug)
     }
 }
 
-void ShiftPawns(char* board[8][8], char* captured[16], bool debug)
+void ShiftPawns(char* board[8][8], char* captured[16], int pawnCodes[8], int bishopCodes[10], bool debug)
 {
     // Count the number of captured pieces
     int numCaptured = 0;
+    int captureCodes[5] = {0, 0, 0};
+    
+    for(int i = 0; i < 8; i++)
+    {
+        if(pawnCodes[i] == 1)
+        {
+            debug ? puts("\tPawns found, continuing with function.") : (void)0;
+            break;
+        }
+        else if(i == 7)
+        {
+            debug ? puts("\tNo pawns found, aborting PawnShift()...") : (void)0;
+            return;
+        }    
+    }
+
+
     for(int i = 0; i < 16; i++)
     {
         if(!strcmp(captured[i], ""))
             break;
 
         else
+        {
+            if(!strcmp(captured[i], ChessPiece("WP")))
+            {
+                captureCodes[0]++;
+            }
+            else if(!strcmp(captured[i], ChessPiece("WB")))
+            {
+                captureCodes[1]++;
+            }
+            else
+            {
+                captureCodes[2]++;
+            }
             numCaptured++;
+        }    
     }
 
-    // If no pieces were captured, dorce quit the function
+    // If no pieces were captured, force quit the function
     if(numCaptured <= 0)
         return;
 
@@ -847,48 +901,85 @@ void ShiftPawns(char* board[8][8], char* captured[16], bool debug)
                 
                 // Select a vertical direction based on the type of the found pawn
                 int vertical = !strcmp(board[i][j], ChessPiece("WP")) ? -1 : 1;
-
+                
                 // Check that the new locations are within the bounds of the board
                 if(!IsOnBoard(i + vertical) || !IsOnBoard(j + horizontal) || !IsOnBoard(7 - i - vertical) || !IsOnBoard(7 - j - horizontal))
-                {   
+                {
+                    
                     // If it isn't, flip the direction of the horizontal change, and try again
                     horizontal *= -1;
                     
                     // If it's still off the board
-                    if(!IsOnBoard(j + horizontal) || !IsOnBoard(7 - j - horizontal))
-                    {
+                    if(!IsOnBoard(j + horizontal) || !IsOnBoard(7 - j - horizontal)){
+                        
                         // Skip it
                         continue;
                     }
+                }
+                
+                // Check that this pawn shift would not put this pawn on the final rank for their type
+                if(!(i + vertical > 0) || !(i + vertical < 7))
+                {
+                    continue;
                 }
 
                 // Check if space or its complement is available
                 if(!SpaceOccupied(board[i + vertical][j + horizontal]) || !SpaceOccupied(board[7 - i - vertical][7 - j - horizontal]))
                 {
                     
+                    // Randomly choose if the capture was done via pawn
                     if(( rand() % 10 ) < threshold)
                     {
                         
+                        // Check if there are captured pawns unaccounted for
+                        if(captureCodes[0] > 0)
+                        {
+                            // Check if this pawn could have captured a pawn in the pawnCodes list
+                            if(!pawnCodes[j + horizontal])
+                            {    
+                                debug ? printf("\tSpecial Pawn Capture: %s  => %s\n", ChessPiece("WP"), ChessPiece("BP")) : (void)0;
+                                pawnCodes[j + horizontal] = -1;
+                            }
+                        }
+    
+                        // Check if there are captured bishops unaccounted for
+                        else if(captureCodes[1] > 0)
+                        {
+                            // Look through bishopCode array
+                            for(int n = 0; n < 10; n++)
+                            {
+                                // If the pawn is on the same color square as the bishop they tried to capture
+                                if((( i + j ) % 2) == bishopCodes[n])
+                                {
+                                    bishopCodes[n] = -1;
+                                }
+                            }
+                        }
+
+                        // If no more generic captures remain, then skip this pawn
+                        else if(captureCodes[2] <= 0)
+                            continue;
+                        
                         debug ? 
-                            printf("\t( %s  , %s  ) => ( %d%c, %d%c ) => ( %d%c, %d%c)\n", 
+                        printf("\t( %s  , %s  ) => ( %d%c, %d%c ) => ( %d%c, %d%c)\n", 
                             board[i][j], board[7 - i][7 - j], 
                             7 - i + 1, (char)(j + 65), i + 1, (char)(7 - j + 65), 
                             7 - i + 1 - vertical, (char)(j + horizontal + 65), i + 1 + vertical, (char)(7 - j - horizontal + 65)) :
                             (void)0;
-                        
-                        // Resets the threshold amount
-                        threshold = 5;
-
-                        // Add pawns to new locations
-                        board[i + vertical][j + horizontal] = !strcmp(board[i][j], ChessPiece("WS")) ? ChessPiece("WS") : ChessPiece("BP");
-                        board[7 - i - vertical][7 - j - horizontal] = !strcmp(board[7 - i][7 - j], ChessPiece("WP")) ? ChessPiece("WP") : ChessPiece("BP");
-    
-                        // Remove pawns from current locations (replace with appropriate colored tile)
-                        // Light = sum of coordinates is even;  (i + j) % 2 = 0 = false
-                        // Dark = sum of coordinates is odd;    (i + j) % 2 = 1 = true
-                        board[i][j] = ((i + j) % 2) ? ChessPiece("BS") : ChessPiece("WS");
-                        board[7 - i][7 - j] = ((14 - i - j) % 2) ? ChessPiece("BS") : ChessPiece("WS");
-                    
+                            
+                            // Resets the threshold amount
+                            threshold = 5;
+                            
+                            // Add pawns to new locations
+                            board[i + vertical][j + horizontal] = !strcmp(board[i][j], ChessPiece("WP")) ? ChessPiece("WP") : ChessPiece("BP");
+                            board[7 - i - vertical][7 - j - horizontal] = !strcmp(board[7 - i][7 - j], ChessPiece("WP")) ? ChessPiece("WP") : ChessPiece("BP");
+                            
+                            // Remove pawns from current locations (replace with appropriate colored tile)
+                            // Light = sum of coordinates is even;  (i + j) % 2 = 0 = false
+                            // Dark = sum of coordinates is odd;    (i + j) % 2 = 1 = true
+                            board[i][j] = ((i + j) % 2) ? ChessPiece("BS") : ChessPiece("WS");
+                            board[7 - i][7 - j] = ((14 - i - j) % 2) ? ChessPiece("BS") : ChessPiece("WS");
+                            
                     }
                     else
                     {
@@ -942,9 +1033,9 @@ void CheckMessage(char* checkingPiece, int checkX, int checkY, int kingX, int ki
     printf("\t%s at %d%c checks %s at %d%c\n", checkingPiece, 7 - checkX + 1, (char)(checkY + 65), ChessPiece("WK"), 7 - kingX + 1, (char)(kingY + 65));
 }
 
-void PlacementMessage(char* placedPiece1, char* placedPiece2, int posX, int posY)
+void PlacementMessage(char* placedPiece, int posX, int posY)
 {
-    printf("\t( %s , %s ) => ( %d%c , %d%c )\n", placedPiece1, placedPiece2, 7 - posX + 1, (char)(posY + 65), 7 - (7 - posX) + 1, (char)(7 - posY + 65));
+    printf("\t( %s , %s ) => ( %d%c , %d%c )\n", placedPiece, SwapPiece(placedPiece), 7 - posX + 1, (char)(posY + 65), 7 - (7 - posX) + 1, (char)(7 - posY + 65));
 }
 
 char* SwapPiece(char* chessPiece)
@@ -984,6 +1075,146 @@ char* SwapPiece(char* chessPiece)
         return ChessPiece("BK");
     else if(!strcmp(chessPiece, ChessPiece("BK")))
         return ChessPiece("WK");
+}
+
+void OutputFEN(char* board[8][8])
+{
+    // More info: https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
+    
+    printf("FEN: ");
+
+    int emptySpace = 0;
+
+    // Print characters based on pieces and their positions
+    for(int i = 0; i < 8; i++)
+    {
+        for(int j = 0; j < 8; j++)
+        {
+            // If there is a chess piece here, print it
+            if(InvChessPiece(board[i][j]))
+            {
+                // But first, print then wip[e the number of empty spaces before finding this piece
+                if(emptySpace)
+                {
+                    printf("%d", emptySpace);
+                    emptySpace = 0;
+                }
+                
+                // Then print the piece
+                printf("%c", InvChessPiece(board[i][j])); 
+            }
+            // If there is not a chess piece here, increment a number instead; print that number on next chess piece, or on end of row
+            else
+            {
+                emptySpace++;
+            }
+
+        }
+        // On end of row
+        if(emptySpace)
+        {
+            printf("%d", emptySpace);
+            emptySpace = 0;
+        }
+        
+        if(i < 7)
+            printf("/");
+    }
+
+    // Whose turn is it (will always be White)
+    printf(" w ");
+
+    // Determine castling rights
+    if(true)
+    {
+        // Catling rights booleans
+        bool K = false, Q = false, k = false, q = false;
+    
+        // Check if black king is where it's supposed to be for castling rights
+        if(!strcmp(board[0][4], ChessPiece("BK")))
+        {
+            if(!strcmp(board[0][0], ChessPiece("BR")))
+            {
+                q = true;
+            }
+
+            if(!strcmp(board[0][7], ChessPiece("BR")))
+            {
+                k = true;
+            }
+        }   
+        
+        // Check if white king is where it's supposed to be for castling rights
+        if(!strcmp(board[7][4], ChessPiece("WK")))
+        {
+            if(!strcmp(board[7][0], ChessPiece("WR")))
+            {
+                Q = true;
+            }
+
+            if(!strcmp(board[7][7], ChessPiece("WR")))
+            {
+                K = true;
+            }
+        }
+    
+        // Prints relevant castling rights
+        K ? printf("K") : (void)0;
+        Q ? printf("Q") : (void)0;
+        k ? printf("k") : (void)0;
+        q ? printf("q") : (void)0;
+    }
+
+    // Determine En Passant rights (is disabled in this version)
+    printf("- ");
+
+    // Turn clocks (As this is in the middle of a game, these will be randomized within a range)
+    printf("%d ", rand()% 40 + 1);
+    printf("%d", rand() % 100 + 21);
+
+    printf("\n\n");
+
+}
+
+char InvChessPiece(char* chessPiece)
+{
+    if(!strcmp(chessPiece, ChessPiece("WP")))
+        return 'P';
+    
+    if(!strcmp(chessPiece, ChessPiece("BP")))
+        return 'p';
+
+    if(!strcmp(chessPiece, ChessPiece("WR")))
+        return 'R';
+    
+    if(!strcmp(chessPiece, ChessPiece("BR")))
+        return 'r';
+
+    if(!strcmp(chessPiece, ChessPiece("WN")))
+        return 'N';
+    
+    if(!strcmp(chessPiece, ChessPiece("BN")))
+        return 'n';
+
+    if(!strcmp(chessPiece, ChessPiece("WB")))
+        return 'B';
+    
+    if(!strcmp(chessPiece, ChessPiece("BB")))
+        return 'b';
+    
+    if(!strcmp(chessPiece, ChessPiece("WQ")))
+        return 'Q';
+    
+    if(!strcmp(chessPiece, ChessPiece("BQ")))
+        return 'q';
+
+    if(!strcmp(chessPiece, ChessPiece("WK")))
+        return 'K';
+    
+    if(!strcmp(chessPiece, ChessPiece("BK")))
+        return 'k';
+
+    return '\0';
 }
 
 #pragma endregion

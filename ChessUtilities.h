@@ -11,17 +11,19 @@ bool Check(char* board[8][8], int posX, int posY, bool debug);
 void AddToCaptured(char* chessPiece, char* captured[16]);
 
 // Piece placement
-void PlacePawns(char* board[8][8], int bonusIterations[4], char* captured[16], bool debug);
+void PlacePawns(char* board[8][8], int bonusIterations[4], char* captured[16], int pawnCodes[8], bool debug);
 void PlaceRooks(char* board[8][8], int extraRooks, char* captured[16], bool debug);
-void PlaceBishops(char* board[8][8], int extraBishops, char* captured[16], bool debug);
+void PlaceBishops(char* board[8][8], int extraBishops, char* captured[16], int pawnCodes[8], int bishopCodes[10], bool debug);
 void PlaceKnights(char* board[8][8], int extraKnights, char* captured[16], bool debug);
 void PlaceQueens(char* board[8][8], int extraQueens, char* captured[16], bool debug);
 void PlaceKing(char* board[8][8], bool debug);
-void ShiftPawns(char* board[8][8], char* captured[16], bool debug);
+void ShiftPawns(char* board[8][8], char* captured[16], int pawnCodes[8], int bishopCodes[10], bool debug);
 
 // Text Output
 void CheckMessage(char* checkingPiece, int posX, int posY, int kingX, int kingY);
-void PlacementMessage(char* placedPiece1, char* placedPiece2, int posX, int posY);
+void PlacementMessage(char* placedPiece1, int posX, int posY);
 char* SwapPiece(char* chessPiece);
+void OutputFEN(char* board[8][8]);
+char InvChessPiece(char* chessPiece);
 
 #endif

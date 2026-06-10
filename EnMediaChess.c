@@ -27,7 +27,7 @@ void InputErrorMessage(void);
 
 int main(void)
 {
-    bool debug = false;
+    bool debug = true;
 
     while(MainMenu(&debug))
     {
@@ -40,19 +40,20 @@ int main(void)
 bool MainMenu(bool* debug)
 {
     setlocale(LC_ALL, "");
+    srand(time(NULL));
 
     PrintGreeting();
 
-    srand(time(NULL));
-
     int input = -1;
     
-    if(!scanf("%d", &input))
+    if(/*!scanf("%d", &input)*/ false)
     {
         InputErrorMessage();
         return false;
     }
     
+    input = 1;
+
     switch(input)
     {
         // Generates the board
@@ -64,6 +65,7 @@ bool MainMenu(bool* debug)
         printf("Exiting...\n\n");
         return false;        
 
+        // Activates Debug Mode
         case -1969667086:
         if(*debug)
         {
@@ -121,6 +123,13 @@ void GenerateBoard(bool debug)
     char* board[8][8];
     int bonusIterations[4] = {0, 0, 0, 0};
     char* captured[16] = {"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""};
+
+    // Bishop codes: -1 = none; 0 = light; 1 = dark
+    int bishopCodes[] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+
+    // Pawn codes: 0 = pawn captured/promoted; 1 = pawn exists
+    int pawnCodes[] = {1, 1, 1, 1, 1, 1, 1, 1};
+
     InitializeBoard(board);
     
     /*
@@ -133,7 +142,7 @@ void GenerateBoard(bool debug)
     
     // Place Pawns (8 ct, not on first or final row)
     debug ? puts("\nGenerating Pawns:") : printf("\nGenerating");
-    PlacePawns(board, bonusIterations, captured, debug);
+    PlacePawns(board, bonusIterations, captured, pawnCodes, debug);
     if(debug) 
     {
         puts("\tDone.\n");
@@ -157,7 +166,7 @@ void GenerateBoard(bool debug)
 
     // Place Bishops (2ct: one on Dark Square, one on Light square)
     debug ? puts("Generating Bishops:") : (void)0;
-    PlaceBishops(board, bonusIterations[2], captured, debug);
+    PlaceBishops(board, bonusIterations[2], captured, pawnCodes, bishopCodes, debug);
     if(debug) 
     {
         puts("\tDone.\n");
@@ -189,7 +198,7 @@ void GenerateBoard(bool debug)
         printf(".");
 
     debug ? puts("Shifting Pawns...") : (void)0;
-    ShiftPawns(board, captured, debug);
+    ShiftPawns(board, captured, pawnCodes, bishopCodes, debug);
     if(debug)
     {
         puts("\tDone.\n");
@@ -206,6 +215,8 @@ void GenerateBoard(bool debug)
     debug ? puts("Board generation complete, printing board:\n") : puts("\nDone.\n");
 
     PrintBoard(board, captured);
+
+    OutputFEN(board);
 }
 
 void InitializeBoard(char* board[8][8])
