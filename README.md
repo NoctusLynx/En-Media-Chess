@@ -22,7 +22,7 @@
         You may use the following command to do so:
             clear && ./EnMediaChess.out
         Alternatively, if you make changes to the code, run this command instead:
-            clear && gcc EnMediaChess.c ChessUtilities.c -o EnMediaChess.out && ./EnMediaChess.out
+            clear && gcc EnMediaChess.c BoardAssessment.c PlacementLogic.c -o EnMediaChess.out && ./EnMediaChess.out
 
 ♟♜♞♝♛♚ - Procedural Generation - ♔♕♗♘♖♙
 
